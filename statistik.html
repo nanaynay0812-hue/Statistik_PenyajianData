@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Overflow Developer Survey  - Dashboard Interaktif</title>
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Inter & Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0B0F19;
+            --bg-card: #151C2C;
+            --bg-card-header: #1E293B;
+            --accent-pink: #FF2E93;
+            --accent-pink-glow: rgba(255, 46, 147, 0.4);
+            --accent-blue: #00D2FF;
+            --accent-blue-glow: rgba(0, 210, 255, 0.4);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --border-color: #2E3A52;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 25px 15px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* HEADER SECTION */
+        header {
+            background: linear-gradient(135deg, rgba(255, 46, 147, 0.12), rgba(0, 210, 255, 0.12));
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px var(--accent-pink-glow);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(12px);
+        }
+
+        .header-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--accent-pink), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-sub {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .group-card {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border-color);
+            padding: 15px 20px;
+            border-radius: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .group-name {
+            font-weight: 700;
+            color: var(--accent-blue);
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .group-members {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .member-badge {
+            background: linear-gradient(135deg, rgba(255, 46, 147, 0.25), rgba(0, 210, 255, 0.25));
+            border: 1px solid var(--accent-pink);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        /* GRID SYSTEM */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 992px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .section-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 210, 255, 0.2);
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 992px) {
+            .full-width {
+                grid-column: span 1;
+            }
+        }
+
+        .card-header-text {
+            margin-bottom: 20px;
+        }
+
+        .card-header-text h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .card-header-text p {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.55;
+            margin-bottom: 12px;
+        }
+
+        .question-box {
+            background: rgba(15, 23, 42, 0.7);
+            border-left: 3px solid var(--accent-pink);
+            padding: 10px 14px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .question-box strong {
+            color: var(--accent-pink);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .chart-container {
+            position: relative;
+            min-height: 320px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .click-hint {
+            position: absolute;
+            top: -12px;
+            right: 0;
+            font-size: 0.75rem;
+            color: var(--accent-pink);
+            background: rgba(255, 46, 147, 0.12);
+            padding: 4px 10px;
+            border-radius: 12px;
+            border: 1px solid var(--accent-pink);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* TABLE STYLING */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.88rem;
+        }
+
+        th {
+            background-color: var(--bg-card-header);
+            color: var(--accent-blue);
+            padding: 14px 16px;
+            border-bottom: 2px solid var(--border-color);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        tbody tr:hover {
+            background-color: rgba(255, 46, 147, 0.12) !important;
+            cursor: pointer;
+        }
+
+        .rank-badge {
+            background: linear-gradient(135deg, var(--accent-pink), #B0005D);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+
+        /* MODAL POPUP */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--accent-pink);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            padding: 25px;
+            box-shadow: 0 0 35px var(--accent-pink-glow);
+            transform: scale(0.85);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.6rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: var(--accent-pink);
+        }
+
+        .modal-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--accent-pink);
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- HEADER SECTION -->
+    <header>
+        <div class="header-title"> PENYAJIAN DATA</div>
+        <div class="header-sub">Analisis Pengaruh Bahasa Pemrograman terhadap Gaji dan Kepuasan Kerja Developer Dengan Data Stack Overflow Developer Survey</div>
+        <div class="group-card">
+            <div class="group-name"> STATISTIK KLOMPOK 7</div>
+            <div class="group-members">
+                <span class="member-badge">NAYLA ANNISA  (250602054)</span>
+                <span class="member-badge">JUWAIRIYYAH  (250602073)</span>
+            
+            </div>
+        </div>
+    </header>
+
+    <div class="grid-2">
+        <!-- 1. SALARY BY DEVELOPER TYPE (HORIZONTAL BAR CHART) -->
+        <div class="section-card full-width">
+            <div class="card-header-text">
+                <h2>Gaji berdasarkan Jenis Pengembang</h2>
+                <p>Secara global, posisi seperti Pimpinan Perusahaan (Senior Executive), Manajer Tim Teknik (Engineering Manager), dan Analis Keuangan (Financial Analyst) merupakan profesi dengan gaji tahunan tertinggi. Namun, nilai gaji ini sangat bergantung pada lokasi kerja; pekerja di posisi tinggi yang berbasis di Amerika Serikat menerima bayaran yang jauh lebih besar dibandingkan dengan mereka yang memegang posisi setara di negara-negara lain</p>
+               
+            </div>
+            <div class="chart-container" style="min-height: 420px;">
+                <span class="click-hint">🖱️ Klik batang untuk detail</span>
+                <canvas id="chartSalaryRole"></canvas>
+            </div>
+        </div>
+
+        <!-- 2. PROGRAMMING, SCRIPTING, AND MARKUP LANGUAGES (VERTICAL BAR CHART) -->
+        <div class="section-card full-width">
+            <div class="card-header-text">
+                <h2>Bahasa Pemrograman, Skrip, dan Markup</h2>
+                <p>Setelah tumbuh stabil selama lebih dari satu dekade, penggunaan Python kini mengalami lonjakan pesat. Python mencatat kenaikan popularitas sebesar 7 poin persentase dari tahun 2024 ke 2025. Pertumbuhan signifikan ini membuktikan posisi Python sebagai bahasa pemrograman utama pilihan pengembang untuk bidang Kecerdasan Buatan (AI), Sains Data (Data Science), dan Pengembangan Back-End.</p>
+             
+            </div>
+            <div class="chart-container" style="min-height: 380px;">
+                <span class="click-hint">🖱️ Klik batang untuk detail</span>
+                <canvas id="chartLanguages"></canvas>
+            </div>
+        </div>
+
+        <!-- 3. LOOKING FOR A NEW ROLE (DOUGHNUT CHART) -->
+        <div class="section-card">
+            <div class="card-header-text">
+                <h2> Mencari Peran Baru</h2>
+                <p>Sebanyak 46% developer sedang tidak mencari pekerjaan atau peran baru</p>
+                
+            </div>
+            <div class="chart-container" style="min-height: 320px;">
+                <span class="click-hint">🖱️ Klik bagian doughnut</span>
+                <canvas id="chartNewRole"></canvas>
+            </div>
+        </div>
+
+        <!-- 4. JOB SATISFACTION (POLAR AREA CHART) -->
+        <div class="section-card">
+            <div class="card-header-text">
+                <h2>Job Satisfaction</h2>
+                <p>Tingkat kepuasan kerja di kalangan developer mengalami peningkatan dibanding tahun lalu (24% dibanding 20%). Kenaikan ini kemungkinan besar berkaitan dengan adanya peningkatan gaji pada sejumlah peran tertentu tahun ini.</p>
+                
+            </div>
+            <div class="chart-container" style="min-height: 320px;">
+                <span class="click-hint">🖱️ Klik segmen polar</span>
+                <canvas id="chartJobSat"></canvas>
+            </div>
+        </div>
+
+        <!-- 5. RANKED ATTRIBUTES (FULL INTERACTIVE TABLE) -->
+        <div class="section-card full-width">
+            <div class="card-header-text">
+                <h2>Ranked Attributes Contributing to or Detracting from Job Satisfaction</h2>
+                <p>Faktor paling krusial yang memengaruhi kepuasan kerja developer adalah kebebasan/kepercayaan dalam bekerja (autonomy/trust), gaji yang bersaing (competitive pay), serta kesempatan memecahkan masalah nyata (solving real-world problems)—semuanya berada di urutan 3 besar. Sebaliknya, faktor hubungan antarpersonal seperti menyukai atasan (liking your manager) berada di peringkat jauh lebih rendah (peringkat 9).</p>
+               
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Satisfaction Factor Attributes</th>
+                            <th>Overall Rank</th>
+                            <th>Median Rank</th>
+                            <th>Mode Rank</th>
+                        </tr>
+                    </thead>
+                    <tbody id="satisfactionTableBody">
+                        <!-- Table Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL POPUP -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title" id="modalCategory">Detail Informasi Data</div>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <div>
+            <div id="modalItem" style="font-weight: 700; color: var(--text-main); font-size: 1.15rem;">Item Label</div>
+            <div class="modal-value" id="modalValue">0</div>
+            <div id="modalDescription" style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">Keterangan detail indikator data survei Stack Overflow 2025.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // POPUP MODAL HANDLER
+    function showModal(category, item, value, desc) {
+        document.getElementById('modalCategory').innerText = category;
+        document.getElementById('modalItem').innerText = item;
+        document.getElementById('modalValue').innerText = value;
+        document.getElementById('modalDescription').innerText = desc;
+        document.getElementById('detailModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('detailModal').classList.remove('active');
+    }
+
+    // 1. SALARY BY DEVELOPER TYPE (HORIZONTAL BAR CHART)
+    const ctxSalary = document.getElementById('chartSalaryRole').getContext('2d');
+    const chartSalary = new Chart(ctxSalary, {
+        type: 'bar',
+        data: {
+            labels: [
+                'Senior Executive', 'Engineering Manager', 'Financial Analyst',
+                'Cloud Infrastructure Engineer', 'Architect, Software or Solutions',
+                'Product Manager', 'Applied Scientist', 'Cybersecurity', 'Founder',
+                'AI/ML Engineer', 'DevOps', 'Database Administrator',
+                'Data Scientist', 'Data Engineer', 'Developer, Back-end', 'Developer, Full-stack'
+            ],
+            datasets: [{
+                data: [139218, 130000, 103757, 103112.5, 102000, 100000, 96945.5, 96146, 92786, 89427, 87011, 85168.5, 82910, 81210, 79742, 72509],
+                backgroundColor: '#00D2FF',
+                hoverBackgroundColor: '#FF2E93',
+                borderRadius: 5
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: '#2E3A52' }, ticks: { color: '#94A3B8', callback: v => '$' + v.toLocaleString() } },
+                y: { grid: { display: false }, ticks: { color: '#F8FAFC', font: { size: 11 } } }
+            },
+            onClick: (e, active) => {
+                if(active.length > 0) {
+                    const idx = active[0].index;
+                    const label = chartSalary.data.labels[idx];
+                    const val = '$' + chartSalary.data.datasets[0].data[idx].toLocaleString();
+                    showModal('Salary by Developer Type', label, val, `Gaji median tahunan (termasuk bonus & insentif sebelum pajak) secara global untuk peran ${label} adalah sebesar ${val}.`);
+                }
+            }
+        }
+    });
+
+    // 2. PROGRAMMING LANGUAGES (VERTICAL BAR CHART)
+    const ctxLang = document.getElementById('chartLanguages').getContext('2d');
+    const chartLang = new Chart(ctxLang, {
+        type: 'bar',
+        data: {
+            labels: ['JavaScript', 'HTML/CSS', 'SQL', 'Python', 'Bash/Shell', 'TypeScript', 'Java', 'C#', 'C++', 'PowerShell', 'C', 'PHP', 'Go', 'Rust', 'Kotlin'],
+            datasets: [{
+                data: [66.0, 61.9, 58.6, 57.9, 48.7, 43.6, 29.4, 27.8, 23.5, 23.2, 22.0, 18.9, 16.4, 14.8, 10.8],
+                backgroundColor: '#FF2E93',
+                hoverBackgroundColor: '#00D2FF',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#F8FAFC', font: { size: 11 } } },
+                y: { grid: { color: '#2E3A52' }, ticks: { color: '#94A3B8', callback: v => v + '%' } }
+            },
+            onClick: (e, active) => {
+                if(active.length > 0) {
+                    const idx = active[0].index;
+                    const label = chartLang.data.labels[idx];
+                    const val = chartLang.data.datasets[0].data[idx] + '%';
+                    showModal('Programming Languages', label, val, `Sebanyak ${val} responden pengembang aktif menggunakan bahasa ${label} untuk pengembangan sistem selama 1 tahun terakhir.`);
+                }
+            }
+        }
+    });
+
+    // 3. LOOKING FOR A NEW ROLE (DOUGHNUT CHART)
+    const ctxRole = document.getElementById('chartNewRole').getContext('2d');
+    const chartRole = new Chart(ctxRole, {
+        type: 'doughnut',
+        data: {
+            labels: ['Not looking', 'Considering somewhat', 'Considering strongly', 'Transitioned voluntarily', 'Transitioned involuntarily'],
+            datasets: [{
+                data: [45.6, 28.8, 14.8, 8.8, 2.0],
+                backgroundColor: ['#00D2FF', '#FF2E93', '#3B82F6', '#EC4899', '#64748B'],
+                borderColor: '#151C2C',
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#F8FAFC', font: { size: 11 } } }
+            },
+            onClick: (e, active) => {
+                if(active.length > 0) {
+                    const idx = active[0].index;
+                    const label = chartRole.data.labels[idx];
+                    const val = chartRole.data.datasets[0].data[idx] + '%';
+                    showModal('Looking for a New Role', label, val, `Proporsi pengembang dalam kategori karir '${label}' mencapai ${val} dari total 35,451 responden.`);
+                }
+            }
+        }
+    });
+
+    // 4. JOB SATISFACTION (POLAR AREA CHART)
+    const ctxJobSat = document.getElementById('chartJobSat').getContext('2d');
+    const chartJobSat = new Chart(ctxJobSat, {
+        type: 'polarArea',
+        data: {
+            labels: ['Complacent at Work', 'Not Happy at Work', 'Happy at Work'],
+            datasets: [{
+                data: [47.1, 28.4, 24.5],
+                backgroundColor: [
+                    'rgba(0, 210, 255, 0.7)',
+                    'rgba(255, 46, 147, 0.7)',
+                    'rgba(59, 130, 246, 0.7)'
+                ],
+                borderColor: '#151C2C',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#F8FAFC', font: { size: 11 } } }
+            },
+            scales: {
+                r: {
+                    grid: { color: '#2E3A52' },
+                    ticks: { backdropColor: 'transparent', color: '#94A3B8' }
+                }
+            },
+            onClick: (e, active) => {
+                if(active.length > 0) {
+                    const idx = active[0].index;
+                    const label = chartJobSat.data.labels[idx];
+                    const val = chartJobSat.data.datasets[0].data[idx] + '%';
+                    showModal('Job Satisfaction', label, val, `Sebanyak ${val} pengembang profesional menyatakan tingkat kepuasan kerja mereka berada di status '${label}'.`);
+                }
+            }
+        }
+    });
+
+    // 5. SATISFACTION FACTORS TABLE DATA (15 ROWS FROM SCREENSHOT)
+    const tableData = [
+        { factor: 'Autonomy and trust to manage your own tasks', overall: 1, median: 4, mode: 1 },
+        { factor: 'Competitive pay and benefits', overall: 2, median: 5, mode: 1 },
+        { factor: 'Solving real-world problems', overall: 3, median: 5, mode: 1 },
+        { factor: 'Innovation through solving challenging and complex problems', overall: 4, median: 6, mode: 2 },
+        { factor: 'Control over the level of quality in projects', overall: 5, median: 6, mode: 4 },
+        { factor: 'Job stability and career growth with a single employer', overall: 6, median: 7, mode: 1 },
+        { factor: 'Collaboration and support from a team', overall: 7, median: 7, mode: 8 },
+        { factor: 'Working with new technologies and tools', overall: 8, median: 7, mode: 5 },
+        { factor: 'You like your manager', overall: 9, median: 8, mode: 14 },
+        { factor: 'Developing specialized expertise', overall: 10, median: 8, mode: 11 },
+        { factor: 'Recognition from peers for your work', overall: 11, median: 9, mode: 13 },
+        { factor: 'Recognition from leadership for your work', overall: 12, median: 9, mode: 11 },
+        { factor: 'Expert mentors', overall: 13, median: 10, mode: 14 },
+        { factor: 'Opportunities to mentor and lead junior-level coworkers', overall: 14, median: 10, mode: 14 },
+        { factor: 'Other', overall: 15, median: 15, mode: 15 }
+    ];
+
+    const tbody = document.getElementById('satisfactionTableBody');
+    tableData.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight: 600; color: #F8FAFC;">${row.factor}</td>
+            <td><span class="-badge"> ${row.overall}</span></td>
+            <td style="color: #94A3B8;"> ${row.median}</td>
+            <td style="color: #94A3B8;">${row.mode}</td>
+        `;
+        tr.onclick = () => {
+            showModal('Job Satisfaction Factor', row.factor, `Overall : #${row.overall}`, `Faktor '${row.factor}' menduduki peringkat utama ke-#${row.overall} dalam menentukan kepuasan kerja pengembang, dengan Median Rank #${row.median} dan Mode Rank #${row.mode}.`);
+        };
+        tbody.appendChild(tr);
+    });
+</script>
+
+</body>
+</html>
